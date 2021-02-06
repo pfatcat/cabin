@@ -1,4 +1,29 @@
-firebaseAuthToken = "bogus_token";
+const express = require('express')
+const request = require('request');
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => {
+  getEnergyInfo(res)
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`)
+})
+
+function get(url, callback){
+    request(url, function (error, response, body) {
+        // console.error('error:', error); // Print the error if one occurred
+        // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+        // console.log('body:', body); // Print the HTML for the Google homepage.
+        callback(body);
+    });
+}
+
+
+const config = require('config');
+firebaseAuthToken = config.firebaseAuthToken;
+console.dir(firebaseAuthToken);
 
 function httpGetAsync(url, callback)
 {
@@ -29,7 +54,7 @@ function httpPostAsync(url, body, callback)
 const getWeatherInfo = function(){
    const url="https://api.ambientweather.net/v1/devices/mac-address?apiKey=api+key&applicationKey=app_key&limit=1";
 
-   httpGetAsync(url, function(response){
+   get(url, function(response){
         data = JSON.parse(response.responseText)[0];
         document.getElementById("spnIndoorTemp").textContent=data.tempinf;
         document.getElementById("spnOutdoorTemp").textContent=data.tempf;     
@@ -37,11 +62,11 @@ const getWeatherInfo = function(){
 
 };
 
-const getEnergyInfo = function(){
-   const url="https://cabin-3bebb.firebaseio.com/solar_stats/2021-01-18.json?auth=";
+const getEnergyInfo = function(res){
+   const url="https://cabin-3bebb.firebaseio.com/solar_stats/2021-02-06.json?auth=";
    let full_url = url + firebaseAuthToken;
 
-    httpGetAsync(full_url, function(response){
+    get(full_url, function(response){
         if(response.status === 401){
              firebaseAuth(function(firebaseAuthToken){
                 full_url = url + firebaseAuthToken;
@@ -51,17 +76,16 @@ const getEnergyInfo = function(){
              });
         }
         else{
-            parseFirebaseResponse(response);
+            res.send(parseFirebaseResponse(response));
         }  
      });
  
  };
 
  const parseFirebaseResponse = function(fbResponse){
-    data = JSON.parse(fbResponse.response);
+    data = JSON.parse(fbResponse);
     most_recent = data[Object.keys(data)[Object.keys(data).length - 1]];
-    document.getElementById("spnBatteryBankVoltage").textContent=most_recent.battery_voltage; 
-    document.getElementById("spnArrayVoltage").textContent=most_recent.array_voltage;
+    return most_recent;
  };
 
  const firebaseAuth = function(callback){
