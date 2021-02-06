@@ -1,7 +1,11 @@
-const express = require('express')
+const cors = require('cors');
+const express = require('express');
 const request = require('request');
-const app = express()
-const port = 3000
+let app = express();
+app.use(cors());
+app.options('*', cors());
+
+const port = 3000;
 
 app.get('/info', (req, res) => { 
     getData(res);
@@ -12,8 +16,15 @@ app.listen(port, () => {
 })
 
 function getData(res){
-    getEnergyInfo(function(data){
-        res.send(data);
+    getEnergyInfo(function(energyData){
+        getWeatherInfo(function(weatherData){
+            const cabin_data =
+            {
+                "energyData": energyData,
+                "weatherData": weatherData
+            }
+            res.send(cabin_data);
+        })
     });
 }
 
@@ -36,41 +47,13 @@ function post(url, body, callback){
 
 const config = require('config');
 
-function httpGetAsync(url, callback)
-{
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4)
-            callback(xmlHttp);
-    }
 
-    xmlHttp.open("GET", url, true); // true for asynchronous 
-    xmlHttp.send(null);
-}
+const getWeatherInfo = function(cb){
+   const ambientWeatherurl=`https://api.ambientweather.net/v1/devices?apiKey=${config.ambientWeatherAPIKey}&applicationKey=${config.ambientWeatherAppKey}&limit=1`;
 
-// function httpPostAsync(url, body, callback)
-// {
-//     let json = JSON.stringify(body);
-    
-//     var xmlHttp = new XMLHttpRequest();
-//     xmlHttp.onreadystatechange = function() { 
-//         if (xmlHttp.readyState == 4)
-//             callback(xmlHttp);
-//     }
-
-//     xmlHttp.open("POST", url, true); // true for asynchronous 
-//     xmlHttp.send(json);
-// }
-
-const getWeatherInfo = function(){
-   const url="https://api.ambientweather.net/v1/devices/mac-address?apiKey=api+key&applicationKey=app_key&limit=1";
-
-   get(url, function(response){
-        data = JSON.parse(response.responseText)[0];
-        document.getElementById("spnIndoorTemp").textContent=data.tempinf;
-        document.getElementById("spnOutdoorTemp").textContent=data.tempf;     
+   get(ambientWeatherurl, function(error, response, body){
+        cb(parseAmbientWeatherResponse(body));
     });
-
 };
 
 const getEnergyInfo = function(cb){
@@ -106,7 +89,6 @@ const getEnergyInfo = function(cb){
         returnSecureToken: true
       };
 
-    //authUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=web_api";
     authUrl = `https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=${config.firebaseAPIKey}`;
 
     post(authUrl, creds, function(error, response, body){
@@ -114,6 +96,15 @@ const getEnergyInfo = function(cb){
         config.firebaseAuthToken = body.idToken;
         callback();
     });
+ };
+
+ const parseAmbientWeatherResponse = function(awResponse){
+    weatherData = JSON.parse(awResponse)
+    oakleyRoad = 
+         weatherData.filter(function(station){
+             return station.macAddress == "48:3F:DA:54:B7:21";
+         });
+    return oakleyRoad[0].lastData;
  };
 
 
