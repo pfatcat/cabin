@@ -1,18 +1,34 @@
 <html>
 <head>
+    <link rel="stylesheet" href="./style.css">
     <script src="main.js"></script>
     <script type="text/javascript">
         getCabinInfo();
     </script>
 </head>
 <body>
-    <div><h1>Cabin Data</h1></div>
-    <ul>
-        <li>Indoor Temp: &nbsp; <span id="spnIndoorTemp"></span></li>
-        <li>Outdoor Temp: &nbsp; <span id="spnOutdoorTemp"></span></li>
-        <li>Battery Bank Voltage: &nbsp; <span id="spnBatteryBankVoltage"></span></li>
-        <li>Array Voltage: &nbsp; <span id="spnArrayVoltage"></span></li>
-    </ul>
+    <div class="mainDiv">
+    <h1>Cabin Data</h1>
+    <div class="data shadow flex-container">
+        <div class="flex-child">
+            <ul>
+                <li>Indoor Temp:</li>
+                <li>Outdoor Temp:</li>
+                <li>Battery Bank Voltage:</li>
+                <li>Array Voltage: &nbsp;</li>
+            </ul>
+        </div>
+        <div class="flex-child">
+            <ul>
+                <li><span id="spnIndoorTemp"></span>&#8457;</li>
+                <li><span id="spnOutdoorTemp"></span>&#8457;</li>
+                <li><span id="spnBatteryBankVoltage"></span>&nbsp;Volts</li>
+                <li><span id="spnArrayVoltage"></span>&nbsp;Volts</li>
+            </ul>
+        </div>
+       
+    </div>
+</div>
 </body>
 
 </html>
