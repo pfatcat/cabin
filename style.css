@@ -23,10 +23,10 @@ body {
 
   .mainDiv .data{
     margin: auto;
-    width: 40%;
+    width: 55%;
     background-color: rgb(211, 209, 200);
     padding: 10px;
-    font-size: xx-large;
+    font-size: 50px; 
 
   }
 
